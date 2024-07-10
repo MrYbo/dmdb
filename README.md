@@ -32,3 +32,31 @@ const DMDB = require('./lib/dmdb');
   console.log(res);
 })();
 ```
+
+## 同步mysql到dm
+```js
+const dmconfig = {
+    connection: {
+      user: "SYSDBA",
+      pwd: "SYSDBA001",
+      host: "127.0.0.1",
+      port: "30236",
+    },
+    tablespace: "HUI"
+  };
+  
+
+  const sqlconfig = {
+    connection: {
+      host: '127.0.0.1',
+      port: 3306,
+      user: 'root',
+      password: '12345678',
+      database: 'hui',
+    },
+  }
+
+  const dmdb = new DMDB(dmconfig);
+  const table = 'event';
+  await dmdb.asynMySQLTable(sqlconfig, table, table);
+```
