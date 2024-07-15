@@ -14,6 +14,7 @@
   },
   "homepage": "https://github.com/MrYbo/dmdbms",
   "dependencies": {
+    "dayjs": "^1.11.11",
     "dmdb": "^1.0.24984",
     "knex": "^3.1.0",
     "lodash": "^4.17.21",
