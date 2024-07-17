@@ -38,3 +38,19 @@ const data = {
 };
 const da = Update('HUI', 'admin', criteria, data, true);
 console.log(da);
+
+/*
+{
+  sql: `UPDATE HUI."admin" t0 SET "username"=:1, "password"=:2, "nickname"=:3, "address"=:4, "phone"=:5, "region"=:6, "subRegion"=:7, "hmac"=:8 WHERE t0."a" = 1 AND (t0."aa" > 2 AND t0."bb" = 3) AND t0."createdAt" > TIMESTAMP '2024-07-11 11:02:55' AND t0."bbb" LIKE '%ssd%' AND t1."c" = 'fdsf' AND t1."d" = 'sddf' AND t2."e" = 'fdsf' AND t2."f" = 'sddf';`,
+  values: [
+    { val: 'fwRGqnRZU6S5fjf/YZA==' },
+    { val: 'B4+RjcJEwySgLWJEezTx==' },
+    { val: '刘晨璞' },
+    { val: null },
+    { val: 'fwRGqnRZU6S5fjf/YZAaPA==' },
+    { val: 4 },
+    { val: null },
+    { val: 'FUj+hIIt0w/7Sbbd1DCTuzmPyuGUt9YdAx/OcW1fjd4=' }
+  ]
+}
+  */

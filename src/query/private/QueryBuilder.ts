@@ -69,14 +69,14 @@ export class DMQueryBuilder {
    * 将传递的表信息初始化，形成数组，到时候只需要处理每个数组的信息就好了
    * @returns 
    */
-  private __init(): tableMata[]{
+  private __init(): tableMata[] {
     const allTableMata: tableMata[] = [];
     const include = this.criteria?.include;
     // 初始化主表的信息
     const masterTableMata: tableMata = {
       role: 'Master',
       tableName: this.table,
-      alias:  `t0`,
+      alias: '',
       where: this.criteria?.where || {},
       select: this.criteria?.select || ['*'],
       sort: this.criteria.sort
@@ -85,6 +85,8 @@ export class DMQueryBuilder {
 
     // 初始化从表的信息
     if (include && include.length > 0) {
+      masterTableMata.alias = 't0';
+      
       include.forEach((v, index) => {
         index += 1;
         const alias = 't' + index;
@@ -104,27 +106,27 @@ export class DMQueryBuilder {
     return allTableMata;
   }
 
-  private quoteIdentifier(identifier: string): string {    
+  private quoteIdentifier(identifier: string): string {
     return this.caseSensitive ? `"${identifier}"` : identifier;
   }
   
   getTableName(tableName: string, alias?: string) {
     const _tName = this.quoteIdentifier(tableName);
     if (!alias) {
-      alias = '';
+      alias = this.allTableMata[0].alias;
     }
     return this.tablespace
-      ? `${this.tablespace}.${_tName} ${alias}` 
+      ? `${this.tablespace}.${_tName} ${alias}`
       : `${_tName} ${alias}`;
   }
 
   private generateWhereStr(where: Record<string, any> | undefined, alias: string) {
     if (!where) return '';
-    const buildCondition = (condition: any, alias: string) => {   
+    const buildCondition = (condition: any, alias: string) => {
       if (typeof condition === 'object' && !Array.isArray(condition)) {
         const keys = Object.keys(condition);
         return keys.map(key => {
-          const column = `${alias}.${this.quoteIdentifier(key)}`;
+          const column = `${alias ? alias + '.' : ''}${this.quoteIdentifier(key)}`;
 
           if (Array.isArray(condition[key])) {
             const values = condition[key].map((v: any) => {
@@ -198,7 +200,7 @@ export class DMQueryBuilder {
         wheres.push('AND', data)
       }
     })
-    return wheres.length? wheres.join(' ') : '';
+    return wheres.length ? wheres.join(' ') : '';
   }
 
   buildJoinClause(): string {
@@ -230,7 +232,7 @@ export class DMQueryBuilder {
     return '';
   }
 
-  buildOffset () {
+  buildOffset() {
     const offset = this.criteria?.offset;
     if (offset) {
       return `OFFSET ${offset}`;
@@ -239,7 +241,7 @@ export class DMQueryBuilder {
   }
 
   buildSort() {
-    const sorts: string[] = ['ORDER BY'];
+    let sorts: string[] = [];
     this.allTableMata.forEach(table => {
       const { alias, sort } = table;
       if (sort) {
@@ -249,7 +251,27 @@ export class DMQueryBuilder {
         sorts.push(`${alias}.${column}`, role);
       }
     });
+    if (sorts.length > 0) {
+      sorts = ['ORDER BY', ...sorts];
+    }
     return sorts.join(' ');
+  }
+
+  formatPlaceholders(action: 'create' | 'update', data: Record<string, any>) {
+    const values: any[] = [];
+    const placeholders: string[] = [];
+    const keys: string[] = [];
+    Object.entries(data).map(([k, v], index) => { 
+      let placeholder = ':' + (index + 1);
+      const key = this.caseSensitive ? `"${k}"` : k;
+      if (action === 'update') {
+        placeholder = `${key}=${placeholder}`
+      }
+      values.push({ val: v })
+      placeholders.push(placeholder);
+      keys.push(key)
+    });
+    return {keys: keys.join(', '), values, placeholders: placeholders.join(', ')}
   }
 }
 

@@ -87,9 +87,7 @@ export class DMDB {
         console.info('--debug info sql--: ', sql);
         console.info('--debug info values--: ', values);
       }
-      const result = await client!.execute(sql, values, {
-        outFormat: executeDefaultOptions.outFormat,
-      });
+      const result = await client!.execute(sql, values);
       await client!.execute(`commit;`);
       return result;
     } catch (error: any) {
@@ -162,7 +160,8 @@ export class DMDB {
         console.info('--debug info sql--: ', sql);
         console.info('--debug info values--: ', values);
       }
-      const result = await client!.execute(sql, values, executeDefaultOptions);
+      const result = await client!.execute(sql, values);
+      await client!.execute('commit;')
       return result;
     } catch (error: any) {
       throw new Error("update data error: " + error.message);

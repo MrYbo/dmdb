@@ -19,7 +19,7 @@ import { Criteria } from "../../src/query";
   const criteria: Criteria = {
     where: {id: 148}
   };
-  const data = {nickname: "张三"}
+  const data = {nickname: "zjamg"}
   // 插入
   const res = await dmdb.update('admin', criteria, data);
   console.log(res);
