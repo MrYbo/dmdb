@@ -16,6 +16,7 @@
   "files": [
     "dist/**/*"
   ],
+  "keywords": ["达梦", "数据库", "dmdb"],
   "homepage": "https://github.com/MrYbo/dmdbms",
   "dependencies": {
     "dayjs": "^1.11.11",
