@@ -2,7 +2,7 @@
   "name": "dmdbms",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
@@ -16,7 +16,11 @@
   "files": [
     "dist/**/*"
   ],
-  "keywords": ["达梦", "数据库", "dmdb"],
+  "keywords": [
+    "达梦",
+    "数据库",
+    "dmdb"
+  ],
   "homepage": "https://github.com/MrYbo/dmdbms",
   "dependencies": {
     "dayjs": "^1.11.11",
