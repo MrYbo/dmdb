@@ -2,10 +2,12 @@ import dayjs from 'dayjs';
 
 interface tableMata {
   //用于区别是主表还是从表
-  role: 'Master' | 'Slave',
+  role: 'Master' | 'Slave';
   // 当前表的名字
-  tableName: string,
-  // 表的别名
+  tableName: string;
+
+  tableNameAlias: string;
+  // 表字段的别名
   alias: string
   // 表的查询条件
   where: Record<string, any> | undefined;
@@ -76,6 +78,7 @@ export class DMQueryBuilder {
     const masterTableMata: tableMata = {
       role: 'Master',
       tableName: this.table,
+      tableNameAlias: '',
       alias: '',
       where: this.criteria?.where || {},
       select: this.criteria?.select || ['*'],
@@ -85,16 +88,19 @@ export class DMQueryBuilder {
 
     // 初始化从表的信息
     if (include && include.length > 0) {
-      masterTableMata.alias = 't0';
-      
+      masterTableMata.tableNameAlias = 't0';
+      masterTableMata.alias = 't0.';
+
       include.forEach((v, index) => {
         index += 1;
-        const alias = 't' + index;
+        const tableNameAlias = 't' + index;
+        const alias = tableNameAlias + '.';
         const slaveTableMata: tableMata = {
           role: 'Slave',
           tableName: v.model,
           joinType: v.type ?? 'inner',
           alias,
+          tableNameAlias,
           where: v.where || {},
           select: v.select || [],
           relation: v.on,
@@ -110,51 +116,64 @@ export class DMQueryBuilder {
     return this.caseSensitive ? `"${identifier}"` : identifier;
   }
   
-  getTableName(tableName: string, alias?: string) {
-    const _tName = this.quoteIdentifier(tableName);
-    if (!alias) {
-      alias = this.allTableMata[0].alias;
-    }
-    return this.tablespace
-      ? `${this.tablespace}.${_tName} ${alias}`
-      : `${_tName} ${alias}`;
-  }
 
-  private generateWhereStr(where: Record<string, any> | undefined, alias: string) {
+  private generateWhereStr(where: Record<string, any> | undefined, alias: string): string{
     if (!where) return '';
     const buildCondition = (condition: any, alias: string) => {
       if (typeof condition === 'object' && !Array.isArray(condition)) {
-        const keys = Object.keys(condition);
-        return keys.map(key => {
-          const column = `${alias ? alias + '.' : ''}${this.quoteIdentifier(key)}`;
+        const whereArray = Object.entries(condition).map(([key, value]: any) => {
+          const column = `${alias}${this.quoteIdentifier(key)}`;
 
-          if (Array.isArray(condition[key])) {
-            const values = condition[key].map((v: any) => {
-              return typeof v === 'string' ? `'${v}'` : v
-            });
-            return `${column} IN (${values.join(', ')})`;
-          }
-          if (typeof condition[key] === 'object') {
-            const operator = Object.keys(condition[key])[0];
-            const value = condition[key][operator];
-            // 模糊查询
-            if (operator.toLowerCase() === 'like' || operator.toLowerCase() === 'contains') {
-              return `${column} LIKE '%${value}%'`;
-            }
-            // 字符串处理
-            if (typeof value === 'string') {
-              if (dayjs(value).isValid()) {
-                return `${column} ${operator} TIMESTAMP '${formatDateToTimestamp(value)}'`;
-              }
-              return `${column} ${operator} '${value}'`;
-            }
-            return `${column} ${operator} ${value}`;
-          } else if (typeof condition[key] === 'string') {
+          if (typeof value === 'string') {
             return `${column} = '${condition[key]}'`;
-          } else {
-            return `${column} = ${condition[key]}`;
           }
-        }).join(' AND ');
+
+          // NULL值
+          if (value === null) {
+            return `${column} IS NULL`;
+          }
+
+          // 数组
+          if (Array.isArray(value)) {
+            const values = condition[key].map((v: any) => typeof v === 'string' ? `'${v}'` : v).join(',');
+            return `${column} IN (${values})`;
+          }
+
+          if (typeof value === 'object') {
+            let [operator, val] = Object.entries(value)[0];
+            operator = operator.toLowerCase();
+            if (!['<', '>', '<=', '>=', '<>', '!=', 'like', 'contains', 'in', 'between'].includes(operator)) { 
+              throw Error('操作符错误');
+            }
+            if (['like', 'contains'].includes(operator)) {
+              return `${column} LIKE '%${val}%'`;
+            }
+            if (['in', 'between'].includes(operator)) {
+              if (!Array.isArray(val)) {
+                throw Error(`${operator}操作符查询值必须为数组`);
+              }
+              const values = condition[key].map((v: any) => typeof v === 'string' ? `'${v}'` : v);
+              if (operator === 'in') {
+                return `${column} IN (${values.join(',')})`;
+              }
+              return `${column} BETWEEN ${val[0]} AND ${val[1]}`;
+            }
+
+            if (val === null) {
+              return `${column} ${operator === '!=' ? 'IS NOT NULL' : 'IS NULL'}`;
+            }
+
+            if (typeof val === 'string') {
+              if (dayjs(val).isValid()) {
+                return `${column} ${operator} TIMESTAMP '${formatDateToTimestamp(val)}'`;
+              }
+              return `${column} ${operator} '${val}'`;
+            }
+            return `${column} ${operator} ${val}`;
+          }
+          return `${column}=${value}`;
+        });
+        return whereArray.join(' AND ');
       }
       return '';
     };
@@ -163,13 +182,23 @@ export class DMQueryBuilder {
     for (const key in where) {
       if (key === 'and' || key === 'or') {
         const conditions = where[key].map((cond: any) => buildCondition(cond, alias));
-        whereClauses.push(`(${conditions.join(` ${key.toUpperCase()} `)})`);
+        const relation = '(' +  conditions.join(` ${key.toUpperCase()} `) + ')';
+        whereClauses.push(relation);
       } else {
         whereClauses.push(buildCondition({ [key]: where[key] }, alias));
       }
     }
-
     return `${whereClauses.join(' AND ')}`;
+  }
+
+  getTableName(tableName: string, tableNameAlias?: string) {
+    const _tName = this.quoteIdentifier(tableName);
+    if (!tableNameAlias) {
+      tableNameAlias = this.allTableMata[0].tableNameAlias;
+    }
+    return this.tablespace
+      ? `${this.tablespace}.${_tName} ${tableNameAlias}`
+      : `${_tName} ${tableNameAlias}`;
   }
 
   buildSelectColoum(): string {
@@ -179,10 +208,10 @@ export class DMQueryBuilder {
       if (!Array.isArray(select)) {
         throw new Error('查询字段请放置在数组中');
       }
-      const sc = select.map(col => alias ? `${alias}.${this.quoteIdentifier(col)}` : this.quoteIdentifier(col));
+      const sc = select.map(col => `${alias}${this.quoteIdentifier(col)}`);
       selectClauses.push(...sc);
     })
-    return `SELECT ${selectClauses.join(', ')}`;
+    return `SELECT ${selectClauses.join(',')}`;
   }
 
   buildSelectCountColoum(): string {
@@ -195,8 +224,8 @@ export class DMQueryBuilder {
 
 
   buildFrom(): string {
-    const { tableName, alias } = this.allTableMata[0];
-    const _tName = this.getTableName(tableName, alias);
+    const { tableName } = this.allTableMata[0];
+    const _tName = this.getTableName(tableName);
     return `FROM ${_tName}`;
   }
 
@@ -223,13 +252,13 @@ export class DMQueryBuilder {
       return '';
     }
     slaveTableMata.forEach(((stable, index) => {
-      const { tableName, alias, relation } = stable;
+      const { tableName, tableNameAlias, alias, relation } = stable;
       const joinType = stable.joinType!.toUpperCase();
-      const slaveTableName = this.getTableName(tableName, alias);
+      const slaveTableName = this.getTableName(tableName, tableNameAlias);
       const [key, value] = Object.entries(relation!)[0];
 
-      const right = `${alias}.${this.quoteIdentifier(value)}`;
-      const left = `${masterTableMata.alias}.${this.quoteIdentifier(key)}`;
+      const right = `${alias}${this.quoteIdentifier(value)}`;
+      const left = `${masterTableMata.alias}${this.quoteIdentifier(key)}`;
       const relations = `${left} = ${right}`;
       joins.push(joinType, 'JOIN', slaveTableName, 'ON', relations);
     }))
@@ -260,7 +289,7 @@ export class DMQueryBuilder {
         let _sort = sort.split(' ');
         const column = this.quoteIdentifier(_sort[0]);
         const role = _sort[1].toUpperCase();
-        sorts.push(`${alias}.${column}`, role);
+        sorts.push(`${alias}${column}`, role);
       }
     });
     if (sorts.length > 0) {

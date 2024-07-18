@@ -17,7 +17,7 @@ export function Create(tablesplace: string, table: string, data: Record<string, 
   const keywords = ['INSERT', 'INTO'];
   const tableName = queryBuilder.getTableName(table);
 
-  keywords.push(tableName, `(${keys})`, 'VALUES',  `(${placeholders})`);
+  keywords.push(tableName, `(${keys})`, 'VALUES', `(${placeholders})`);
   return {sql: keywords.join(' ') + ';', values};
 }
 
