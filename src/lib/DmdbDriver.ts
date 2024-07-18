@@ -64,6 +64,7 @@ export class DMDB {
   }
 
   private isReadableState(obj: any) {
+    if (!obj) return obj;
     return Boolean(obj._readableState);
 }
 

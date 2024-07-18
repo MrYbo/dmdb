@@ -179,7 +179,7 @@ export class DMQueryBuilder {
       if (!Array.isArray(select)) {
         throw new Error('查询字段请放置在数组中');
       }
-      const sc = select.map(col => `${alias}.${this.quoteIdentifier(col)}`);
+      const sc = select.map(col => alias ? `${alias}.${this.quoteIdentifier(col)}` : this.quoteIdentifier(col));
       selectClauses.push(...sc);
     })
     return `SELECT ${selectClauses.join(', ')}`;
