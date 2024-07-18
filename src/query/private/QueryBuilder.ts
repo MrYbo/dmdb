@@ -10,7 +10,7 @@ interface tableMata {
   // 表的查询条件
   where: Record<string, any> | undefined;
   // 需要查询的字段
-  select: string[],
+  select: string | string[],
   // 排序规则
   sort?: string
   // 主表和从表对应的字段关系, 键为主表的，key则为对应的从表的属性
@@ -20,7 +20,7 @@ interface tableMata {
 }
 
 export interface Criteria {
-  select?: string[];
+  select?: string | string[];
   include?: JoinDetail[];
   where?: Record<string, any>;
   sort?: string;
@@ -176,11 +176,23 @@ export class DMQueryBuilder {
     let selectClauses: string[] = [];
     this.allTableMata.forEach((table) => {
       const { select, alias } = table;
+      if (!Array.isArray(select)) {
+        throw new Error('查询字段请放置在数组中');
+      }
       const sc = select.map(col => `${alias}.${this.quoteIdentifier(col)}`);
       selectClauses.push(...sc);
     })
     return `SELECT ${selectClauses.join(', ')}`;
   }
+
+  buildSelectCountColoum(): string {
+    const select = this.allTableMata[0].select;
+    if (typeof select !== 'string' || !(select.startsWith('count') || select.startsWith('COUNT'))) {
+      throw new Error('count查询请使用count(*) || COUNT(*) || count(column)');
+    }
+    return `SELECT ${select} as "total"`;
+  }
+
 
   buildFrom(): string {
     const { tableName, alias } = this.allTableMata[0];

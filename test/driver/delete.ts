@@ -19,7 +19,7 @@ import { Criteria } from "../../src/query";
   const criteria: Criteria = {
     where: {id: 148}
   };
-  // 插入
+  // 删除
   const res = await dmdb.delete('admin', criteria);
   console.log(res);
 })();

@@ -31,12 +31,10 @@ import { Criteria } from "../../src/query";
       },
     ],
     offset: 0,
-    limit: 10,
+    limit: 5,
     sort: 'id DESC'
   };
-  // 查找
-  const res = await dmdb.find('event', criteria);
-  criteria.select = 'count(*)';
-  const data = await dmdb.count('event', criteria);
-  console.log(res, data);
+  // 查找并返回条数
+  const {items, total} = await dmdb.findAllAndCount('event', criteria);
+  console.log(items, total);
 })();

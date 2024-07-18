@@ -20,7 +20,7 @@ import { Criteria } from "../../src/query";
     where: {id: 148}
   };
   const data = {nickname: "zjamg"}
-  // 插入
+  // 更新
   const res = await dmdb.update('admin', criteria, data);
   console.log(res);
 })();

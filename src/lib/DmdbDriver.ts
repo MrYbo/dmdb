@@ -1,9 +1,8 @@
-import dmdb, { Connection } from "dmdb";
+import dmdb, { Connection, Result } from "dmdb";
 import * as query from '../query';
 import { Criteria } from "../query/private/QueryBuilder";
 import { Knex } from "knex";
 import { MySQLDriver } from "./mysqlDriver";
-
 interface DMOPtions {
   caseSensitive?: boolean,
   debug?: boolean
@@ -16,6 +15,11 @@ interface ConnectionConfig {
   port: string
 }
 
+interface FindResult {
+  items: any[]
+  total: null
+}
+
 export interface DmConfig {
   connection: ConnectionConfig
   tablespace: string,
@@ -25,7 +29,7 @@ export interface DmConfig {
 const executeDefaultOptions = {
   autoCommit: true,
   compatibleMode: 'mysql',
-  extendedMetaData: true,
+  extendedMetaData: false,
   outFormat: dmdb.OUT_FORMAT_OBJECT,
 }
 
@@ -58,6 +62,10 @@ export class DMDB {
       this.conn = this.pool.getConnection()
     }
   }
+
+  private isReadableState(obj: any) {
+    return Boolean(obj._readableState);
+}
 
   async getClient() {
     await this.init();
@@ -131,25 +139,52 @@ export class DMDB {
       console.info('--debug info sql--: ', sql);
     }
     try {
+      const datas: any[] = [];
       const client = await this.getClient();
-      const data = await client!.execute(sql, [], executeDefaultOptions);
-      let rows: any[] = data.rows as any[];
-      if (!rows.length) return [];
+      const data: Result<any> = await client!.execute(sql, [], { ...executeDefaultOptions, resultSet: true });
+      
+      const resultSet = data.resultSet;
+      const count = resultSet?.getRowCount();
+      if (!count) return datas;
 
-      const metaData: any[] = data.metaData as any[];
-      // 对于text类型的数据，达梦数据库返回的是一个lob对象，需要特殊处理才能转变成字符串
-      const lobProperties = metaData!.filter(v => v.dbTypeName === 'TEXT').map(v => v.name);
-      const result = await Promise.all(rows!.map(async (v: any) => {
-        await Promise.all(lobProperties.map(async (lp) => {
-          var data = await this.readLob(v[lp]);
-          v[lp] = data;
-        }));
-        return v;
-      }));
-      return result;
+      let result = await resultSet!.getRow();
+      while (result) {
+        for (const key in result) {
+          let value = result[key];
+          // 对于text类型的数据，达梦数据库返回的是一个lob对象，需要特殊处理才能转变成字符串
+          if (this.isReadableState(value)) {
+            result[key] = await this.readLob(value);
+          }
+        }
+        datas.push(result);
+        result =  await resultSet!.getRow();
+      }
+      return datas;
     } catch (error: any) {
       throw new Error("select data error: " + error.message);
     }
+  }
+
+  async count(table: string, criteria: Criteria) {
+    const sql = query.Count(this.tablespace, table, criteria, this.caseSensitive);
+    if (this.debug) {
+      console.info('--debug info sql--: ', sql);
+    }
+    try {
+      const client = await this.getClient();
+      const data: Result<any> = await client!.execute(sql, [], executeDefaultOptions);
+      const total = data.rows ? data.rows[0].total : 0;
+      return total;
+    } catch (error: any) {
+      throw new Error("select count data error: " + error.message);
+    }
+  }
+
+  async findAllAndCount(table: string, criteria: Criteria): Promise<FindResult> {
+    const items = await this.find(table, criteria);
+    criteria.select = 'count(*)';
+    const total = await this.count(table, criteria);
+    return { items, total };
   }
 
   async update(table: string, criteria: Criteria, data: Record<string, any>) {
