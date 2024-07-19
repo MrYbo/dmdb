@@ -1,4 +1,4 @@
-import { Create } from "../../src/query";
+import { Create } from '../../src/query';
 
 const data = {
   username: 'fwRGqnRZU6S5fjf/YZA==',

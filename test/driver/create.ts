@@ -3,15 +3,15 @@ import { DMDB, DmConfig } from '../../src/lib/DmdbDriver';
 (async () => {
   const config: DmConfig = {
     connection: {
-      user: "SYSDBA",
-      password: "SYSDBA001",
-      host: "127.0.0.1",
-      port: "30236",
+      user: 'SYSDBA',
+      password: 'SYSDBA001',
+      host: '127.0.0.1',
+      port: '30236',
     },
-    tablespace: "HUI",
+    tablespace: 'HUI',
     options: {
-      caseSensitive: true
-    }
+      caseSensitive: true,
+    },
   };
   //初始化
   const dmdb = new DMDB(config);

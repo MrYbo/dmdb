@@ -1,4 +1,4 @@
-import { Delete, Criteria} from "../../src/query";
+import { Delete, Criteria } from '../../src/query';
 
 const criteria: Criteria = {
   select: ['a', 'b'],
@@ -6,7 +6,7 @@ const criteria: Criteria = {
     a: 1,
     and: [{ aa: { '>': 2 } }, { bb: 3 }],
     createdAt: { '>': '2024-07-11T11:02:55+08:00' },
-    bbb: { 'like': 'ssd' }
+    bbb: { like: 'ssd' },
   },
   // include: [
   //   {

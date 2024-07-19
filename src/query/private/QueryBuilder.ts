@@ -8,17 +8,17 @@ interface tableMata {
 
   tableNameAlias: string;
   // 表字段的别名
-  alias: string
+  alias: string;
   // 表的查询条件
   where: Record<string, any> | undefined;
   // 需要查询的字段
-  select: string | string[],
+  select: string | string[];
   // 排序规则
-  sort?: string
+  sort?: string;
   // 主表和从表对应的字段关系, 键为主表的，key则为对应的从表的属性
-  relation?: Record<string, string>,
+  relation?: Record<string, string>;
 
-  joinType?: 'inner' | 'left' | 'right' | undefined
+  joinType?: 'inner' | 'left' | 'right' | undefined;
 }
 
 export interface Criteria {
@@ -39,37 +39,30 @@ export interface JoinDetail {
   sort?: string;
 }
 
-
 export interface QueryOptions {
   caseSensitive?: boolean;
 }
-
-const defaultOptions: QueryOptions = {
-  caseSensitive: true  // 这里设置默认值
-};
-
-
 export class DMQueryBuilder {
-  private tablespace: string
-  private table: string
+  private tablespace: string;
+  private table: string;
   private criteria: Criteria;
   private caseSensitive: boolean;
-  private allTableMata: tableMata[]
-  private options: QueryOptions
+  private allTableMata: tableMata[];
+  private options: QueryOptions;
 
   constructor(tablespace: string, table: string, criteria: Criteria, options?: QueryOptions) {
     this.tablespace = tablespace;
     this.table = table;
     this.criteria = criteria;
-    this.options = options || {}
+    this.options = options || {};
     this.caseSensitive = this.options?.caseSensitive ?? true;
-  
+
     this.allTableMata = this.__init();
   }
 
   /**
    * 将传递的表信息初始化，形成数组，到时候只需要处理每个数组的信息就好了
-   * @returns 
+   * @returns
    */
   private __init(): tableMata[] {
     const allTableMata: tableMata[] = [];
@@ -82,7 +75,7 @@ export class DMQueryBuilder {
       alias: '',
       where: this.criteria?.where || {},
       select: this.criteria?.select || ['*'],
-      sort: this.criteria.sort
+      sort: this.criteria.sort,
     };
     allTableMata.push(masterTableMata);
 
@@ -115,9 +108,8 @@ export class DMQueryBuilder {
   private quoteIdentifier(identifier: string): string {
     return this.caseSensitive ? `"${identifier}"` : identifier;
   }
-  
 
-  private generateWhereStr(where: Record<string, any> | undefined, alias: string): string{
+  private generateWhereStr(where: Record<string, any> | undefined, alias: string): string {
     if (!where) return '';
     const buildCondition = (condition: any, alias: string) => {
       if (typeof condition === 'object' && !Array.isArray(condition)) {
@@ -135,14 +127,15 @@ export class DMQueryBuilder {
 
           // 数组
           if (Array.isArray(value)) {
-            const values = condition[key].map((v: any) => typeof v === 'string' ? `'${v}'` : v).join(',');
+            const values = condition[key].map((v: any) => (typeof v === 'string' ? `'${v}'` : v)).join(',');
             return `${column} IN (${values})`;
           }
 
           if (typeof value === 'object') {
-            let [operator, val] = Object.entries(value)[0];
-            operator = operator.toLowerCase();
-            if (!['<', '>', '<=', '>=', '<>', '!=', 'like', 'contains', 'in', 'between'].includes(operator)) { 
+            const arr = Object.entries(value)[0];
+            const operator = arr[0].toLowerCase();
+            const val = arr[1];
+            if (!['<', '>', '<=', '>=', '<>', '!=', 'like', 'contains', 'in', 'between'].includes(operator)) {
               throw Error('操作符错误');
             }
             if (['like', 'contains'].includes(operator)) {
@@ -152,7 +145,7 @@ export class DMQueryBuilder {
               if (!Array.isArray(val)) {
                 throw Error(`${operator}操作符查询值必须为数组`);
               }
-              const values = condition[key].map((v: any) => typeof v === 'string' ? `'${v}'` : v);
+              const values = condition[key].map((v: any) => (typeof v === 'string' ? `'${v}'` : v));
               if (operator === 'in') {
                 return `${column} IN (${values.join(',')})`;
               }
@@ -182,7 +175,7 @@ export class DMQueryBuilder {
     for (const key in where) {
       if (key === 'and' || key === 'or') {
         const conditions = where[key].map((cond: any) => buildCondition(cond, alias));
-        const relation = '(' +  conditions.join(` ${key.toUpperCase()} `) + ')';
+        const relation = '(' + conditions.join(` ${key.toUpperCase()} `) + ')';
         whereClauses.push(relation);
       } else {
         whereClauses.push(buildCondition({ [key]: where[key] }, alias));
@@ -196,21 +189,20 @@ export class DMQueryBuilder {
     if (!tableNameAlias) {
       tableNameAlias = this.allTableMata[0].tableNameAlias;
     }
-    return this.tablespace
-      ? `${this.tablespace}.${_tName} ${tableNameAlias}`
-      : `${_tName} ${tableNameAlias}`;
+    const tName = this.tablespace ? `${this.tablespace}.${_tName} ${tableNameAlias}` : `${_tName} ${tableNameAlias}`;
+    return tName.trim();
   }
 
   buildSelectColoum(): string {
-    let selectClauses: string[] = [];
-    this.allTableMata.forEach((table) => {
+    const selectClauses: string[] = [];
+    this.allTableMata.forEach(table => {
       const { select, alias } = table;
       if (!Array.isArray(select)) {
         throw new Error('查询字段请放置在数组中');
       }
       const sc = select.map(col => `${alias}${this.quoteIdentifier(col)}`);
       selectClauses.push(...sc);
-    })
+    });
     return `SELECT ${selectClauses.join(',')}`;
   }
 
@@ -219,9 +211,8 @@ export class DMQueryBuilder {
     if (typeof select !== 'string' || !(select.startsWith('count') || select.startsWith('COUNT'))) {
       throw new Error('count查询请使用count(*) || COUNT(*) || count(column)');
     }
-    return `SELECT ${select} as "total"`;
+    return `SELECT ${select} AS "total"`;
   }
-
 
   buildFrom(): string {
     const { tableName } = this.allTableMata[0];
@@ -229,18 +220,19 @@ export class DMQueryBuilder {
     return `FROM ${_tName}`;
   }
 
-
   buildWhereClause(): string {
     const wheres: string[] = [];
-    this.allTableMata.forEach((table) => {
+    this.allTableMata.forEach(table => {
       const { where, alias, role } = table;
       const data = this.generateWhereStr(where, alias);
-      if (role === 'Master') {
-        wheres.push('WHERE', data)
-      } else {
-        wheres.push('AND', data)
+      if (Boolean(data)) {
+        if (role === 'Master') {
+          wheres.push('WHERE', data);
+        } else {
+          wheres.push('AND', data);
+        }
       }
-    })
+    });
     return wheres.length ? wheres.join(' ') : '';
   }
 
@@ -251,7 +243,7 @@ export class DMQueryBuilder {
     if (!slaveTableMata.length) {
       return '';
     }
-    slaveTableMata.forEach(((stable, index) => {
+    slaveTableMata.forEach(stable => {
       const { tableName, tableNameAlias, alias, relation } = stable;
       const joinType = stable.joinType!.toUpperCase();
       const slaveTableName = this.getTableName(tableName, tableNameAlias);
@@ -261,7 +253,7 @@ export class DMQueryBuilder {
       const left = `${masterTableMata.alias}${this.quoteIdentifier(key)}`;
       const relations = `${left} = ${right}`;
       joins.push(joinType, 'JOIN', slaveTableName, 'ON', relations);
-    }))
+    });
     return joins.join(' ');
   }
 
@@ -286,7 +278,7 @@ export class DMQueryBuilder {
     this.allTableMata.forEach(table => {
       const { alias, sort } = table;
       if (sort) {
-        let _sort = sort.split(' ');
+        const _sort = sort.split(' ');
         const column = this.quoteIdentifier(_sort[0]);
         const role = _sort[1].toUpperCase();
         sorts.push(`${alias}${column}`, role);
@@ -302,20 +294,20 @@ export class DMQueryBuilder {
     const values: any[] = [];
     const placeholders: string[] = [];
     const keys: string[] = [];
-    Object.entries(data).map(([k, v], index) => { 
+    Object.entries(data).map(([k, v], index) => {
       let placeholder = ':' + (index + 1);
       const key = this.caseSensitive ? `"${k}"` : k;
       if (action === 'update') {
-        placeholder = `${key}=${placeholder}`
+        placeholder = `${key}=${placeholder}`;
       }
-      values.push({ val: v })
+      values.push({ val: v });
       placeholders.push(placeholder);
-      keys.push(key)
+      keys.push(key);
     });
-    return {keys: keys.join(', '), values, placeholders: placeholders.join(', ')}
+    return { keys: keys.join(', '), values, placeholders: placeholders.join(', ') };
   }
 }
 
-function formatDateToTimestamp (dateString: string) {
-  return dayjs(dateString).format('YYYY-MM-DD HH:mm:ss')
+function formatDateToTimestamp(dateString: string) {
+  return dayjs(dateString).format('YYYY-MM-DD HH:mm:ss');
 }

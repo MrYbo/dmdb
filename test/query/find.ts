@@ -1,4 +1,4 @@
-import { Find, Criteria } from "../../src/query";
+import { Find, Criteria } from '../../src/query';
 
 const criteria: Criteria = {
   select: ['a', 'b'],
@@ -7,15 +7,15 @@ const criteria: Criteria = {
     and: [{ aa: { '>': 2 } }, { bb: 3 }],
     or: [{ aa: { '>': 2 } }, { bb: 3 }],
     createdAt: { '>': '2024-07-11T11:02:55+08:00' },
-    bb: { 'like': 'ssd' },
-    bbv: {'!=': null}
+    bb: { like: 'ssd' },
+    bbv: { '!=': null },
   },
   include: [
     {
       select: ['c', 'd'],
       model: 'another_table',
       type: 'left',
-      on: { 'another_id': 'id'},
+      on: { another_id: 'id' },
       where: { c: 'fdsf', d: 'sddf' },
     },
     {
@@ -24,8 +24,8 @@ const criteria: Criteria = {
       model: 'another_table',
       on: { id: 'another_id' },
       where: { e: 'fdsf', f: 'sddf' },
-    }
-  ]
+    },
+  ],
 };
 
 const da = Find('HUI', 'admin', criteria, true);
