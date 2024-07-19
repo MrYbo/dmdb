@@ -20,7 +20,7 @@
     "url": "https://github.com/MrYbo/dmdbms"
   },
   "files": [
-    "dist/**/*"
+    "build/**/*"
   ],
   "keywords": [
     "达梦",
