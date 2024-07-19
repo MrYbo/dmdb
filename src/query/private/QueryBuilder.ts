@@ -225,7 +225,7 @@ export class DMQueryBuilder {
     this.allTableMata.forEach(table => {
       const { where, alias, role } = table;
       const data = this.generateWhereStr(where, alias);
-      if (Boolean(data)) {
+      if (data) {
         if (role === 'Master') {
           wheres.push('WHERE', data);
         } else {

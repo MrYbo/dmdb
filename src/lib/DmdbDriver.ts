@@ -71,7 +71,7 @@ export class DMDB {
     }
   }
 
-  private isReadableState(obj: any) {
+  private isReadableState(obj: any): boolean {
     if (!obj) return obj;
     return Boolean(obj._readableState);
   }
