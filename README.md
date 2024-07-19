@@ -1,7 +1,6 @@
 # A simple orm framework library for dmdb
 
 [![CI](https://github.com/MrYbo/dmdbms/actions/workflows/ci.yml/badge.svg)](https://github.com/MrYbo/dmdbms/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/typestack/dmdbms/branch/develop/graph/badge.svg)](https://codecov.io/gh/typestack/dmdbms)
 [![install size](https://packagephobia.com/badge?p=dmdbms)](https://packagephobia.com/result?p=dmdbms)
 
 [![NPM version](https://img.shields.io/npm/v/dmdbms.svg?style=flat)](https://www.npmjs.com/package/dmdbms)
