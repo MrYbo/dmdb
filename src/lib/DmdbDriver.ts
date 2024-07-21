@@ -59,15 +59,8 @@ export class DMDB {
           poolMin: 1,
         });
       }
-      if (!this.conn) {
-        await this.init();
-        this.conn = this.pool.getConnection();
-      }
     } catch (error: any) {
       throw new Error('init dmdb error: ' + error.message);
-    } finally {
-      (await this.conn)?.close();
-      await this.pool?.close();
     }
   }
 
@@ -78,7 +71,7 @@ export class DMDB {
 
   async getClient() {
     await this.init();
-    return this.conn;
+    return this.pool!.getConnection();;
   }
 
   async readLob(lob: any) {
@@ -149,9 +142,10 @@ export class DMDB {
     if (this.debug) {
       console.info('--debug info sql--: ', sql);
     }
+    const client = await this.getClient();
+    
     try {
       const datas: any[] = [];
-      const client = await this.getClient();
       const data: Result<any> = await client!.execute(sql, [], { ...executeDefaultOptions, resultSet: true });
 
       const resultSet = data.resultSet;
