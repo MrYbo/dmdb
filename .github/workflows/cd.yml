@@ -19,6 +19,7 @@ jobs:
       - run: npm run build
       - run: cp LICENSE build/LICENSE
       - run: cp README.md build/README.md
+      - run: cat package.json | grep version
       - run: jq 'del(.devDependencies) | del(.scripts)' package.json > build/package.json
       - run: npm publish ./build
         env:
