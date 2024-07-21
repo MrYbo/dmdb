@@ -71,7 +71,7 @@ export class DMDB {
 
   async getClient() {
     await this.init();
-    return this.pool!.getConnection();;
+    return this.pool!.getConnection();
   }
 
   async readLob(lob: any) {
@@ -143,7 +143,7 @@ export class DMDB {
       console.info('--debug info sql--: ', sql);
     }
     const client = await this.getClient();
-    
+
     try {
       const datas: any[] = [];
       const data: Result<any> = await client!.execute(sql, [], { ...executeDefaultOptions, resultSet: true });
