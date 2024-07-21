@@ -2,7 +2,7 @@
   "name": "dmdbms",
   "version": "0.1.5",
   "description": "A simple orm framework library for dmdb",
-  "main": "dist/index.js",
+  "main": "build/index.js",
   "scripts": {
     "prettier:fix": "prettier --write \"**/*.{ts,md}\"",
     "prettier:check": "prettier --check \"**/*.{ts,md}\"",
