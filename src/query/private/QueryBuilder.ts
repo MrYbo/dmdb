@@ -201,7 +201,7 @@ export class DMQueryBuilder {
         throw new Error('查询字段请放置在数组中');
       }
       const sc = select.map(col => {
-        return col === '*' ? `${alias}.*` : `${alias}${this.quoteIdentifier(col)}`;
+        return col === '*' ? `${alias}*` : `${alias}${this.quoteIdentifier(col)}`;
       });
       selectClauses.push(...sc);
     });
