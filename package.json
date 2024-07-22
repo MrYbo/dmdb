@@ -1,6 +1,6 @@
 {
   "name": "dmdbms",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "A simple orm framework library for dmdb",
   "main": "build/index.js",
   "scripts": {
