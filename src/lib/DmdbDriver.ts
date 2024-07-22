@@ -1,4 +1,4 @@
-import dmdb, { Connection, Result } from 'dmdb';
+import dmdb, { Result } from 'dmdb';
 import * as query from '../query';
 import { Criteria } from '../query/private/QueryBuilder';
 import { Knex } from 'knex';
@@ -39,14 +39,12 @@ export class DMDB {
   private caseSensitive: boolean;
   private debug: boolean;
   private pool: dmdb.Pool | null;
-  private conn: Promise<Connection> | null;
   constructor(config: DmConfig) {
     this.connection = config.connection;
     this.tablespace = config.tablespace;
     this.caseSensitive = config?.options?.caseSensitive ?? true;
     this.debug = config?.options?.debug ?? true;
     this.pool = null;
-    this.conn = null;
   }
 
   private async init() {
@@ -55,7 +53,7 @@ export class DMDB {
         const { user, password, host, port } = this.connection;
         this.pool = await dmdb.createPool({
           connectString: `dm://${user}:${password}@${host}:${port}?autoCommit=false&loginEncrypt=false`,
-          poolMax: 10,
+          poolMax: 20,
           poolMin: 1,
         });
       }
@@ -90,8 +88,8 @@ export class DMDB {
   }
 
   async create(table: string, data: Record<string, any>) {
+    const client = await this.getClient();
     try {
-      const client = await this.getClient();
       const { sql, values } = query.Create(this.tablespace, table, data, this.caseSensitive);
       if (this.debug) {
         console.info('--debug info sql--: ', sql);
@@ -102,6 +100,8 @@ export class DMDB {
       return result;
     } catch (error: any) {
       throw new Error('insert data error: ' + error.message);
+    } finally {
+      client.close();
     }
   }
 
@@ -167,6 +167,8 @@ export class DMDB {
       return datas;
     } catch (error: any) {
       throw new Error('select data error: ' + error.message);
+    } finally {
+      client.close();
     }
   }
 
@@ -175,13 +177,15 @@ export class DMDB {
     if (this.debug) {
       console.info('--debug info sql--: ', sql);
     }
+    const client = await this.getClient();
     try {
-      const client = await this.getClient();
       const data: Result<any> = await client!.execute(sql, [], executeDefaultOptions);
       const total = data.rows ? data.rows[0].total : 0;
       return total;
     } catch (error: any) {
       throw new Error('select count data error: ' + error.message);
+    } finally {
+      client.close();
     }
   }
 
@@ -193,8 +197,8 @@ export class DMDB {
   }
 
   async update(table: string, criteria: Criteria, data: Record<string, any>) {
+    const client = await this.getClient();
     try {
-      const client = await this.getClient();
       const { sql, values } = query.Update(this.tablespace, table, criteria, data, this.caseSensitive);
       if (this.debug) {
         console.info('--debug info sql--: ', sql);
@@ -205,12 +209,14 @@ export class DMDB {
       return result;
     } catch (error: any) {
       throw new Error('update data error: ' + error.message);
+    } finally {
+      client.close();
     }
   }
 
   async delete(table: string, criteria: Criteria) {
+    const client = await this.getClient();
     try {
-      const client = await this.getClient();
       const sql = query.Delete(this.tablespace, table, criteria);
       if (this.debug) {
         console.info('--debug info sql--: ', sql);
@@ -220,16 +226,20 @@ export class DMDB {
       return result;
     } catch (error: any) {
       throw new Error('delete data error: ' + error.message);
+    } finally {
+      client.close();
     }
   }
 
   async sendNativeQuery(sql: string, values: any[] = []) {
+    const client = await this.getClient();
     try {
-      const client = await this.getClient();
       const result = await client!.execute(sql, values, executeDefaultOptions);
       return result;
     } catch (error: any) {
       throw new Error('sendNativeQuery error: ' + error.message);
+    } finally {
+      client.close();
     }
   }
 

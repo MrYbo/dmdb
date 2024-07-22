@@ -39,9 +39,9 @@ jobs:
       - name: Prepare package.json
         run: |
           jq 'del(.devDependencies) | del(.scripts)' package.json > build/package.json
-      
+          cat build/package.json
       - name: Fix package.json
-        run: npm pkg fix
+        run: npm pkg fix --location=./build
       
       - name: Setup .npmrc
         run: |
@@ -50,6 +50,6 @@ jobs:
           cat ./.npmrc
       
       - name: Publish package
-        run: npm publish ./build
+        run: npm publish
         env:
           NPM_PUBLISH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
