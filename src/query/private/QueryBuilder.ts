@@ -290,18 +290,15 @@ export class DMQueryBuilder {
           column = this.quoteIdentifier(_sort[0]);
           role = _sort[1].toUpperCase();
           sorts.push(`${alias}${column}`, role);
-        }
-
-        // sort: [ { id: 'DESC' } ],
-        if (Array.isArray(sort)) {
+        } else if (Array.isArray(sort)) {
+          // sort: [ { id: 'DESC' } ],
           sort.forEach(v => {
             [column, role] = Object.entries(v)[0];
             column = this.quoteIdentifier(column);
             sorts.push(`${alias}${column}`, role);
           });
-        }
-        // { id: 'DESC' }
-        if (typeof sort === 'object') {
+        } else if (typeof sort === 'object') {
+          // { id: 'DESC' }
           [column, role] = Object.entries(sort)[0];
           column = this.quoteIdentifier(column);
           sorts.push(`${alias}${column}`, role);
