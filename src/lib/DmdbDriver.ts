@@ -158,7 +158,7 @@ export class DMDB {
           const value = result[key];
           // 对于text类型的数据，达梦数据库返回的是一个lob对象，需要特殊处理才能转变成字符串
           if (this.isReadableState(value)) {
-            result[key] = await this.readLob(value);
+            result[key] = value.iLob.data;
           }
         }
         datas.push(result);
