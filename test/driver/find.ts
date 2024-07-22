@@ -32,7 +32,7 @@ import { Criteria } from '../../src/query';
     ],
     offset: 0,
     limit: 10,
-    sort: 'id DESC',
+    sort: { id: 'DESC' },
   };
   // 查找
   const res = await dmdb.find('event', criteria);

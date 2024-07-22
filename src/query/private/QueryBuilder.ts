@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 
+type sortRole = 'desc' | 'asc' | 'DESC' | 'ASC';
+
 interface tableMata {
   //用于区别是主表还是从表
   role: 'Master' | 'Slave';
@@ -14,7 +16,7 @@ interface tableMata {
   // 需要查询的字段
   select: string | string[];
   // 排序规则
-  sort?: string;
+  sort?: string | Record<string, sortRole> | Record<string, sortRole>[];
   // 主表和从表对应的字段关系, 键为主表的，key则为对应的从表的属性
   relation?: Record<string, string>;
 
@@ -25,7 +27,7 @@ export interface Criteria {
   select?: string | string[];
   include?: JoinDetail[];
   where?: Record<string, any>;
-  sort?: string;
+  sort?: string | Record<string, sortRole> | Record<string, sortRole>[];
   limit?: number;
   offset?: number;
 }
@@ -280,10 +282,30 @@ export class DMQueryBuilder {
     this.allTableMata.forEach(table => {
       const { alias, sort } = table;
       if (sort) {
-        const _sort = sort.split(' ');
-        const column = this.quoteIdentifier(_sort[0]);
-        const role = _sort[1].toUpperCase();
-        sorts.push(`${alias}${column}`, role);
+        let column = '';
+        let role = '';
+        // sort: 'id DESC'
+        if (typeof sort === 'string') {
+          const _sort = sort.split(' ');
+          column = this.quoteIdentifier(_sort[0]);
+          role = _sort[1].toUpperCase();
+          sorts.push(`${alias}${column}`, role);
+        }
+
+        // sort: [ { id: 'DESC' } ],
+        if (Array.isArray(sort)) {
+          sort.forEach(v => {
+            [column, role] = Object.entries(v)[0];
+            column = this.quoteIdentifier(column);
+            sorts.push(`${alias}${column}`, role);
+          });
+        }
+        // { id: 'DESC' }
+        if (typeof sort === 'object') {
+          [column, role] = Object.entries(sort)[0];
+          column = this.quoteIdentifier(column);
+          sorts.push(`${alias}${column}`, role);
+        }
       }
     });
     if (sorts.length > 0) {
