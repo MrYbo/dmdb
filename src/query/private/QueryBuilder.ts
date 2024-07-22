@@ -278,7 +278,7 @@ export class DMQueryBuilder {
   }
 
   buildSort() {
-    let sorts: string[] = [];
+    const sorts: string[] = [];
     this.allTableMata.forEach(table => {
       const { alias, sort } = table;
       if (sort) {
