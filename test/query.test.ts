@@ -94,7 +94,7 @@ describe('DMQueryBuilder', () => {
 
   test('Find Build find statement', () => {
     const findSql = query.Find(tablespace, table, baseCriteria, options.caseSensitive);
-    const sql = `SELECT t0."name",t0."age" FROM PUB."users" t0 INNER JOIN PUB."employees" t1 ON t0."id" = t1."manager_id" WHERE (t0."age" < 10 AND t0."age" > 30) AND t0."name" LIKE '%zs%' AND t0."sex" IS NOT NULL LIMIT 10 OFFSET 5 ORDER BY t0."name" ASC;`;
+    const sql = `SELECT t0."name",t0."age" FROM PUB."users" t0 INNER JOIN PUB."employees" t1 ON t0."id" = t1."manager_id" WHERE (t0."age" < 10 AND t0."age" > 30) AND t0."name" LIKE '%zs%' AND t0."sex" IS NOT NULL ORDER BY t0."name" ASC LIMIT 10 OFFSET 5;`;
     expect(findSql).toEqual(sql);
   });
 
