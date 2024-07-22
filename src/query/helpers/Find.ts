@@ -9,7 +9,7 @@ export function Find(tablesplace: string, table: string, criteria: Criteria, cas
   const limitClause = queryBuilder.buildLimit();
   const offsetClause = queryBuilder.buildOffset();
   const sortClause = queryBuilder.buildSort();
-  const arr = [selectClause, fromClause, joinClause, whereClause, limitClause, offsetClause, sortClause].filter(
+  const arr = [selectClause, fromClause, joinClause, whereClause, sortClause, limitClause, offsetClause].filter(
     v => v !== ''
   );
   const sql = arr.join(' ') + ';';

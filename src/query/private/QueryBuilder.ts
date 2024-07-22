@@ -305,10 +305,10 @@ export class DMQueryBuilder {
         }
       }
     });
-    if (sorts.length > 0) {
-      sorts = ['ORDER BY', ...sorts];
+    if (!sorts.length) {
+      return '';
     }
-    return sorts.join(' ');
+    return ['ORDER BY', ...sorts].join(' ');
   }
 
   formatPlaceholders(action: 'create' | 'update', data: Record<string, any>) {
