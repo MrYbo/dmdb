@@ -48,8 +48,11 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_PUBLISH_TOKEN }}" > .npmrc
           ls -al
           cat ./.npmrc
+      - name: Verify build directory content
+        run: ls -al build
+
+      # - name: Publish package
+      #   run: npm publish ./build
       
-      - name: Publish package
-        run: npm publish
         env:
           NPM_PUBLISH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}

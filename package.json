@@ -2,7 +2,8 @@
   "name": "dmdbms",
   "version": "0.1.16",
   "description": "A simple orm framework library for dmdb",
-  "main": "build/index.js",
+  "main": "index.js",
+  
   "scripts": {
     "prettier:fix": "prettier --write \"**/*.{ts,md}\"",
     "prettier:check": "prettier --check \"**/*.{ts,md}\"",
@@ -15,19 +16,22 @@
   },
   "author": "boY",
   "license": "ISC",
+  "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MrYbo/dmdbms"
+    "url": "https://github.com/0x0bit/dmdbms.git"
   },
   "files": [
-    "build/**/*"
+    "build/**/*",
+    "LICENSE",
+    "README.md"
   ],
   "keywords": [
     "达梦",
     "数据库",
     "dmdb"
   ],
-  "homepage": "https://github.com/MrYbo/dmdbms",
+  "homepage": "https://github.com/0x0bit/dmdbms",
   "dependencies": {
     "dayjs": "^1.11.11",
     "dmdb": "^1.0.24984",
