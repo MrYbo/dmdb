@@ -51,8 +51,8 @@ jobs:
       - name: Verify build directory content
         run: ls -al build
 
-      # - name: Publish package
-      #   run: npm publish ./build
+      - name: Publish package
+        run: npm publish ./build
       
         env:
           NPM_PUBLISH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
