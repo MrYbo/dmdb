@@ -1,9 +1,8 @@
 {
   "name": "dmdbms",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "A simple orm framework library for dmdb",
   "main": "index.js",
-  
   "scripts": {
     "prettier:fix": "prettier --write \"**/*.{ts,md}\"",
     "prettier:check": "prettier --check \"**/*.{ts,md}\"",
