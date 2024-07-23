@@ -4,7 +4,7 @@
     "lib": ["ES2018","dom"],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
 
     "module": "commonjs",                                /* Specify what module code is generated. */
-    "rootDir": "./src",                                  /* Specify the root folder within your source files. */
+    "rootDir": "src",                                  /* Specify the root folder within your source files. */
     "outDir": "build",                                   /* Specify an output folder for all emitted files. */
 
     "declaration": true,                              /* Generate .d.ts files from TypeScript and JavaScript files in your project. */

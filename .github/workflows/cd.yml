@@ -38,7 +38,7 @@ jobs:
       
       - name: Prepare package.json
         run: |
-          jq 'del(.devDependencies) | del(.scripts)' package.json > build/package.json
+          jq 'del(.devDependencies) | del(.scripts) | del(.files)' package.json > build/package.json
           cat build/package.json
       - name: Fix package.json
         run: npm pkg fix --location=./build
@@ -48,6 +48,7 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_PUBLISH_TOKEN }}" > .npmrc
           ls -al
           cat ./.npmrc
+          
       - name: Verify build directory content
         run: ls -al build
 

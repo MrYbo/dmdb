@@ -46,7 +46,6 @@ build/
 tmp/
 out-tsc/
 temp
-test/
 
 # Files for playing around locally
 playground.ts
